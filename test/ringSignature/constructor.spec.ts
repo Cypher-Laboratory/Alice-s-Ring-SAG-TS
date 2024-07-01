@@ -9,7 +9,6 @@ import {
 import { HashFunction } from "../../src/utils/hashFunction";
 import * as data from "../data";
 
-const ed25519 = new Curve(CurveName.ED25519);
 const secp256k1 = new Curve(CurveName.SECP256K1);
 
 describe("Test Constructor", () => {
@@ -25,18 +24,6 @@ describe("Test Constructor", () => {
    */
   describe("Test constructor with invalid parameters", () => {
     /* -------------TEST INVALID RING------------- */
-    it("Should throw if public keys are empty - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            [],
-            data.randomC,
-            data.randomResponses,
-            ed25519,
-          ),
-      ).toThrow(noEmptyRing);
-    });
     it("Should throw if public keys are empty - secp256k1", () => {
       expect(
         () =>
@@ -50,20 +37,6 @@ describe("Test Constructor", () => {
       ).toThrow(noEmptyRing);
     });
 
-    it("Should throw if at least 1 public key is not on the curve - ed25519", () => {
-      const ring = data.publicKeys_ed25519.slice(1);
-
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            [new Point(ed25519, [2n, 3n])].concat(ring),
-            data.randomC,
-            data.randomResponses,
-            ed25519,
-          ),
-      ).toThrow(notOnCurve(`[2, 3]`));
-    });
     it("Should throw if at least 1 public key is not on the curve - secp256k1", () => {
       const ring = data.publicKeys_secp256k1.slice(1);
 
@@ -79,20 +52,6 @@ describe("Test Constructor", () => {
       ).toThrow(notOnCurve(`[2, 3]`));
     });
 
-    it("Should throw if one point is (0, 0) - ed25519", () => {
-      const ring = data.publicKeys_ed25519.slice(1);
-
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            [new Point(ed25519, [0n, 0n])].concat(ring),
-            data.randomC,
-            data.randomResponses,
-            ed25519,
-          ),
-      ).toThrow("Point is not on curve: [0, 0]");
-    });
     it("Should throw if one point is (0, 0) - secp256k1", () => {
       const ring = data.publicKeys_secp256k1.slice(1);
 
@@ -109,18 +68,6 @@ describe("Test Constructor", () => {
     });
 
     /* -------------TEST INVALID RING<->RESPONSES CORRELATION------------- */
-    it("Should throw if ring and responses length do not match - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_ed25519,
-            data.randomC,
-            data.randomResponses.slice(1),
-            ed25519,
-          ),
-      ).toThrow(lengthMismatch("ring", "responses"));
-    });
     it("Should throw if ring and responses length do not match - secp256k1", () => {
       expect(
         () =>
@@ -135,18 +82,6 @@ describe("Test Constructor", () => {
     });
 
     /* -------------TEST INVALID RESPONSES------------- */
-    it("Should throw if at least 1 response is 0 - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_ed25519,
-            data.randomC,
-            data.randomResponses, // [0n].concat(data.randomResponses.slice(1)),
-            ed25519,
-          ),
-      ).toThrow(invalidResponses);
-    });
     it("Should throw if at least 1 response is 0 - secp256k1", () => {
       expect(
         () =>
@@ -166,7 +101,7 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             data.message,
-            data.publicKeys_ed25519,
+            data.publicKeys_secp256k1,
             data.randomC,
             data.randomResponses,
             new Curve("invalid name" as CurveName),
@@ -179,10 +114,10 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             data.message,
-            data.publicKeys_ed25519,
+            data.publicKeys_secp256k1,
             data.randomC,
             data.randomResponses,
-            ed25519,
+            secp256k1,
             { hash: HashFunction.KECCAK256 },
           ),
       );
@@ -192,10 +127,10 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             data.message,
-            data.publicKeys_ed25519,
+            data.publicKeys_secp256k1,
             data.randomC,
             data.randomResponses,
-            ed25519,
+            secp256k1,
             { hash: HashFunction.SHA512 },
           ),
       );
@@ -205,28 +140,16 @@ describe("Test Constructor", () => {
         () =>
           new RingSignature(
             data.message,
-            data.publicKeys_ed25519,
+            data.publicKeys_secp256k1,
             data.randomC,
             data.randomResponses,
-            ed25519,
+            secp256k1,
             {},
           ),
       );
     });
   });
   describe("Test constructor with valid parameters", () => {
-    it("Should pass if all parameters are valid - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_ed25519,
-            data.randomC,
-            data.randomResponses,
-            ed25519,
-          ),
-      );
-    });
     it("Should pass if all parameters are valid - secp256k1", () => {
       expect(
         () =>
@@ -238,19 +161,6 @@ describe("Test Constructor", () => {
             secp256k1,
           ),
       );
-    });
-
-    it("Should throw if at least 1 response is 0 - ed25519", () => {
-      expect(
-        () =>
-          new RingSignature(
-            data.message,
-            data.publicKeys_ed25519,
-            data.randomC,
-            [0n].concat(data.randomResponses.slice(1)),
-            ed25519,
-          ),
-      ).toThrow(invalidResponses);
     });
 
     it("Should throw if at least 1 response is 0 - secp256k1", () => {

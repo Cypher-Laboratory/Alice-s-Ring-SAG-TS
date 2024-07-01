@@ -1,10 +1,9 @@
 import { Curve, CurveName } from "../../src";
-import { invalidPoint, noEmptyRing } from "../../src/errors";
+import { noEmptyRing } from "../../src/errors";
 import { checkRing } from "../../src/ringSignature";
 import * as data from "../data";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
-const ed25519 = new Curve(CurveName.ED25519);
 
 /*
  * Test for checkRing function
@@ -23,12 +22,6 @@ describe("test checkRing()", () => {
 
   it("Should throw an error if the ring is empty", () => {
     expect(() => checkRing([], secp256k1)).toThrow(noEmptyRing);
-  });
-
-  it("Should throw an error if at least one point is not on the specified curve", () => {
-    expect(() => checkRing(data.publicKeys_secp256k1, ed25519)).toThrow(
-      invalidPoint("At least one point is not valid: Error: Curve mismatch"),
-    );
   });
 
   it("Should throw an error if the ring contains duplicates", () => {

@@ -1,6 +1,6 @@
 import { randomBigint, modulo, hash, base64Regex } from "./utils";
 import { piSignature } from "./signature/piSignature";
-import { CurveName, derivePubKey } from "./curves";
+import { derivePubKey } from "./curves";
 import { Curve, Point } from ".";
 import { SignatureConfig } from "./interfaces";
 import { HashFunction } from "./utils/hashFunction";
@@ -48,10 +48,6 @@ export class RingSignature {
     // check if config is an object
     if (config && typeof config !== "object")
       throw err.invalidParams("Config must be an object");
-
-    // evm compatibility does not work with ed25519
-    if (curve.name === CurveName.ED25519 && config?.evmCompatibility)
-      throw err.invalidParams("EVM compatibility is not available for ed25519");
 
     // check ring, c and responses validity
     checkRing(ring, curve);

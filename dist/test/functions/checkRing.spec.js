@@ -28,7 +28,6 @@ const errors_1 = require("../../src/errors");
 const ringSignature_1 = require("../../src/ringSignature");
 const data = __importStar(require("../data"));
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
-const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
 /*
  * Test for checkRing function
  *
@@ -45,9 +44,6 @@ describe("test checkRing()", () => {
     });
     it("Should throw an error if the ring is empty", () => {
         expect(() => (0, ringSignature_1.checkRing)([], secp256k1)).toThrow(errors_1.noEmptyRing);
-    });
-    it("Should throw an error if at least one point is not on the specified curve", () => {
-        expect(() => (0, ringSignature_1.checkRing)(data.publicKeys_secp256k1, ed25519)).toThrow((0, errors_1.invalidPoint)("At least one point is not valid: Error: Curve mismatch"));
     });
     it("Should throw an error if the ring contains duplicates", () => {
         expect(() => (0, ringSignature_1.checkRing)(data.publicKeys_secp256k1.concat(data.publicKeys_secp256k1), secp256k1)).toThrow("Duplicates found in ring");

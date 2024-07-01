@@ -26,7 +26,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const src_1 = require("../../src");
 const data = __importStar(require("../data"));
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
-const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
 /**
  * Test the RingSignature.verify() method
  *
@@ -41,19 +40,8 @@ describe("Test verify()", () => {
         const signature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1);
         expect(signature.verify()).toBe(true);
     });
-    it("Should return true if the signature is valid - ed25519", () => {
-        const signature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519);
-        expect(signature.verify()).toBe(true);
-    });
     it("Should return false if the signature is invalid - secp256k1", () => {
         const signature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1).toJsonString();
-        // modify the signature message
-        const editedSig = JSON.parse(signature);
-        editedSig.message = "Wrong message";
-        expect(src_1.RingSignature.fromJsonString(editedSig).verify()).toBe(false);
-    });
-    it("Should return false if the signature is invalid - ed25519", () => {
-        const signature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519).toJsonString();
         // modify the signature message
         const editedSig = JSON.parse(signature);
         editedSig.message = "Wrong message";

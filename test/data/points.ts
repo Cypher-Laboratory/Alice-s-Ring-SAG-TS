@@ -1,10 +1,7 @@
 import { Point } from "../../src";
 import { hash } from "../../src/utils";
-import { SECP256K1, ED25519 } from "./curves";
-import * as ed from "../../src/utils/noble-libraries/noble-ED25519";
-import { sha512 } from "@noble/hashes/sha512";
+import { SECP256K1 } from "./curves";
 import { derivePubKey } from "../../src/curves";
-ed.etc.sha512Sync = (...m) => sha512(ed.etc.concatBytes(...m));
 
 export const privateKey = [
   // len = 10
@@ -71,20 +68,17 @@ export const privateKey = [
 ];
 
 /* -------------SIGNER KEYS------------- */
-export const signerPrivKey = ed.utils.getExtendedPublicKey(
-  BigInt(
-    "0x" +
-      hash([
-        "4705133659738916056634998425092693862103756529453934308865022401716",
-      ]),
-  ).toString(16),
-).scalar;
+export const signerPrivKey = BigInt(
+  "0x" +
+    hash([
+      "4705133659738916056634998425092693862103756529453934308865022401716",
+    ]),
+);
 
 export const signerPubKey_secp256k1 = derivePubKey(signerPrivKey, SECP256K1);
-export const signerPubKey_ed25519 = derivePubKey(signerPrivKey, ED25519);
 /* --------------------------------------- */
 
-export const zeroPivateKey = 0n;
+export const zeroPrivateKey = 0n;
 export const unsortedPublicKeys_secp256k1 = privateKey.map((privKey) =>
   SECP256K1.GtoPoint().mult(privKey),
 );
@@ -95,35 +89,12 @@ export const publicKeys_secp256k1 = privateKey
     // sort by x ascending
     (a, b) => (a.x < b.x ? -1 : a.x > b.x ? 1 : 0),
   );
-export const unsortedPublicKeys_ed25519 = privateKey.map((key) => {
-  return ED25519.GtoPoint().mult(
-    ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
-  );
-});
-export const publicKeys_ed25519 = privateKey
-  .map((key) => {
-    return ED25519.GtoPoint().mult(
-      ed.utils.getExtendedPublicKey(key.toString(16)).scalar,
-    );
-  })
-  .sort(
-    // sort by x ascending
-    (a, b) => (a.x < b.x ? -1 : a.x > b.x ? 1 : 0),
-  );
 
-export const valid_coordinates_ed25519: [bigint, bigint] = [
-  18692818425924056284077361575286289503472634786144083983260241244353871635402n,
-  25130982270725351492078080917244946694662105954296899228585440574429183004137n,
-];
 export const valid_coordinates_secp256k1: [bigint, bigint] = [
   30558939714202291090863029727820829993227403204286654734430544819396481281155n,
   46835398937525857424678912804713110217248423408711238708095319128726301404767n,
 ];
 
-export const valid_string_point_ed25519 = new Point(
-  ED25519,
-  valid_coordinates_ed25519,
-).toString();
 export const valid_string_point_secp256k1 = new Point(
   SECP256K1,
   valid_coordinates_secp256k1,
@@ -135,18 +106,11 @@ export const invalid_string_point_secp256k1 =
     valid_coordinates_secp256k1.length - 3,
   ) +
   valid_string_point_secp256k1.slice(valid_coordinates_secp256k1.length - 2);
-export const invalid_string_point_ed25519 =
-  valid_string_point_ed25519.slice(0, valid_coordinates_ed25519.length - 3) +
-  valid_string_point_ed25519.slice(valid_coordinates_ed25519.length - 2);
 
 // invalid points
 export const idPoint_secp256k1 = new Point(SECP256K1, [0n, 0n], false);
 export const idPointX_secp256k1 = new Point(SECP256K1, [0n, 1n], false);
 export const idPointY_secp256k1 = new Point(SECP256K1, [1n, 0n], false);
-
-export const idPoint_ed25519 = new Point(ED25519, [0n, 0n], false);
-export const idPointX_ed25519 = new Point(ED25519, [0n, 1n], false);
-export const idPointY_ed25519 = new Point(ED25519, [1n, 0n], false);
 
 export const randomC =
   4663621002712304654134267866148565564648521986326001983848741804705428459856n;

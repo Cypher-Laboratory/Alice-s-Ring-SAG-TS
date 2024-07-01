@@ -2,7 +2,6 @@ import { Curve, CurveName, RingSignature } from "../../src";
 import * as data from "../data";
 
 const secp256k1 = new Curve(CurveName.SECP256K1);
-const ed25519 = new Curve(CurveName.ED25519);
 
 /**
  * Test the RingSignature.verify() method
@@ -24,16 +23,6 @@ describe("Test verify()", () => {
 
     expect(signature.verify()).toBe(true);
   });
-  it("Should return true if the signature is valid - ed25519", () => {
-    const signature = RingSignature.sign(
-      data.publicKeys_ed25519,
-      data.signerPrivKey,
-      data.message,
-      ed25519,
-    );
-
-    expect(signature.verify()).toBe(true);
-  });
 
   it("Should return false if the signature is invalid - secp256k1", () => {
     const signature = RingSignature.sign(
@@ -41,21 +30,6 @@ describe("Test verify()", () => {
       data.signerPrivKey,
       data.message,
       secp256k1,
-    ).toJsonString();
-
-    // modify the signature message
-    const editedSig = JSON.parse(signature);
-    editedSig.message = "Wrong message";
-
-    expect(RingSignature.fromJsonString(editedSig).verify()).toBe(false);
-  });
-
-  it("Should return false if the signature is invalid - ed25519", () => {
-    const signature = RingSignature.sign(
-      data.publicKeys_ed25519,
-      data.signerPrivKey,
-      data.message,
-      ed25519,
     ).toJsonString();
 
     // modify the signature message

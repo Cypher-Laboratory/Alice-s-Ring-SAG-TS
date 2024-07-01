@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Point = void 0;
 const curves_1 = require("./curves");
 const noble_SECP256k1_1 = require("./utils/noble-libraries/noble-SECP256k1");
-const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
 const utils_1 = require("./utils");
 const errors_1 = require("./errors");
 const sha3_1 = require("@noble/hashes/sha3");
@@ -46,15 +45,7 @@ class Point {
             throw (0, errors_1.invalidParams)(`Scalar must be < N ${this.curve.N}, but got ${scalar}`);
         switch (this.curve.name) {
             case curves_1.CurveName.SECP256K1: {
-                const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
-                    x: this.x,
-                    y: this.y,
-                }).mul((0, utils_1.modulo)(scalar, this.curve.N));
-                const affine = result.toAffine();
-                return new Point(this.curve, [affine.x, affine.y], false);
-            }
-            case curves_1.CurveName.ED25519: {
-                const result = noble_ED25519_1.ExtendedPoint.fromAffine({
+                const result = noble_SECP256k1_1.SECP256K1Point.fromAffine({
                     x: this.x,
                     y: this.y,
                 }).mul((0, utils_1.modulo)(scalar, this.curve.N));
@@ -77,21 +68,10 @@ class Point {
             throw (0, errors_1.differentCurves)("Cannot add points");
         switch (this.curve.name) {
             case curves_1.CurveName.SECP256K1: {
-                const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
+                const result = noble_SECP256k1_1.SECP256K1Point.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).add(noble_SECP256k1_1.ProjectivePoint.fromAffine({
-                    x: point.x,
-                    y: point.y,
-                }));
-                const affine = result.toAffine();
-                return new Point(this.curve, [affine.x, affine.y], false);
-            }
-            case curves_1.CurveName.ED25519: {
-                const result = noble_ED25519_1.ExtendedPoint.fromAffine({
-                    x: this.x,
-                    y: this.y,
-                }).add(noble_ED25519_1.ExtendedPoint.fromAffine({
+                }).add(noble_SECP256k1_1.SECP256K1Point.fromAffine({
                     x: point.x,
                     y: point.y,
                 }));
@@ -114,19 +94,10 @@ class Point {
             return false;
         switch (this.curve.name) {
             case curves_1.CurveName.SECP256K1: {
-                return noble_SECP256k1_1.ProjectivePoint.fromAffine({
+                return noble_SECP256k1_1.SECP256K1Point.fromAffine({
                     x: this.x,
                     y: this.y,
-                }).equals(noble_SECP256k1_1.ProjectivePoint.fromAffine({
-                    x: point.x,
-                    y: point.y,
-                }));
-            }
-            case curves_1.CurveName.ED25519: {
-                return noble_ED25519_1.ExtendedPoint.fromAffine({
-                    x: this.x,
-                    y: this.y,
-                }).equals(noble_ED25519_1.ExtendedPoint.fromAffine({
+                }).equals(noble_SECP256k1_1.SECP256K1Point.fromAffine({
                     x: point.x,
                     y: point.y,
                 }));
@@ -146,15 +117,7 @@ class Point {
     negate() {
         switch (this.curve.name) {
             case curves_1.CurveName.SECP256K1: {
-                const result = noble_SECP256k1_1.ProjectivePoint.fromAffine({
-                    x: this.x,
-                    y: this.y,
-                }).negate();
-                const affine = result.toAffine();
-                return new Point(this.curve, [affine.x, affine.y], false);
-            }
-            case curves_1.CurveName.ED25519: {
-                const result = noble_ED25519_1.ExtendedPoint.fromAffine({
+                const result = noble_SECP256k1_1.SECP256K1Point.fromAffine({
                     x: this.x,
                     y: this.y,
                 }).negate();
@@ -237,10 +200,6 @@ class Point {
                 return ((this.y % 2n === 0n ? "02" : "03") +
                     this.x.toString(16).padStart(64, "0"));
             }
-            case curves_1.CurveName.ED25519: {
-                return ("ED" + (this.x % 2n === 0n ? "02" : "03") + this.y.toString(16) //.padStart(64, "0")
-                );
-            }
             default: {
                 throw (0, errors_1.unknownCurve)("Cannot compress point: unknown curve");
             }
@@ -255,10 +214,7 @@ class Point {
      */
     static deserialize(compressed) {
         let curveName;
-        if (compressed.startsWith("ED")) {
-            curveName = curves_1.CurveName.ED25519;
-        }
-        else if (compressed.startsWith("02") || compressed.startsWith("03")) {
+        if (compressed.startsWith("02") || compressed.startsWith("03")) {
             curveName = curves_1.CurveName.SECP256K1;
         }
         else {
@@ -281,25 +237,6 @@ class Point {
                     return new Point(curve, [x, y]);
                 }
             }
-            case curves_1.CurveName.ED25519: {
-                const y = BigInt("0x" + compressed.slice(4));
-                // This part of the code is taken from noble-ed25519
-                const d = -4513249062541557337682894930092624173785641285191125241628941591882900924598840740n;
-                const y2 = (0, utils_1.modulo)(y * y, curve.P); // y²
-                const u = (0, utils_1.modulo)(y2 - 1n, curve.P); // u=y²-1
-                const v = (0, utils_1.modulo)(d * y2 + 1n, curve.P); // v=dy²+1
-                const { isValid, value } = (0, noble_ED25519_1.uvRatio)(u, v); // (uv³)(uv⁷)^(p-5)/8; square root
-                if (!isValid)
-                    throw new Error("bad y coordinate"); // not square root: bad point
-                // end of noble code
-                // check if y is even or odd
-                if (value % BigInt(2) ? "03" : "02" === compressed.slice(2, 4)) {
-                    return new Point(curve, [value, y]);
-                }
-                else {
-                    return new Point(curve, [curve.P - value, y]);
-                }
-            }
             default: {
                 throw (0, errors_1.unknownCurve)("Cannot decompress point: unknown curve");
             }
@@ -319,14 +256,6 @@ class Point {
             // we check if the point is not the point at infinity (0,0) in affine coordinates
             case curves_1.CurveName.SECP256K1: {
                 return this.equals(new Point(this.curve, [0n, 0n], false)) === false;
-            }
-            // ed25519 has a cofactor of 8 so we need to check for low order points
-            // we check if (N-1)*P = -P (where P is the point and N is the order of the curve)
-            // we check if the point is not the point at infinity (0,1) in affine coordinates
-            // if true, the point is not low order or hybrid
-            case curves_1.CurveName.ED25519: {
-                return (this.mult(this.curve.N - 1n).equals(this.negate()) &&
-                    this.equals(new Point(this.curve, [0n, 1n], false)) === false);
             }
             default: {
                 throw (0, errors_1.unknownCurve)(this.curve.name);

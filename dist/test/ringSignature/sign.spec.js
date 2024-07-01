@@ -28,7 +28,6 @@ const data = __importStar(require("../data"));
 const errors_1 = require("../../src/errors");
 const hashFunction_1 = require("../../src/utils/hashFunction");
 const secp256k1 = new src_1.Curve(src_1.CurveName.SECP256K1);
-const ed25519 = new src_1.Curve(src_1.CurveName.ED25519);
 /**
  * Test the RingSignature.sign() method
  *
@@ -47,29 +46,13 @@ describe("Test sign()", () => {
         expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
         expect(ringSignature.verify()).toBe(true);
     });
-    it("Should return a valid ring signature - ed25519", () => {
-        const ringSignature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519);
-        expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
-        expect(ringSignature.verify()).toBe(true);
-    });
     it("Should throw if the ring is not valid - secp256k1", () => {
         expect(() => {
             src_1.RingSignature.sign(data.publicKeys_secp256k1.slice(1).concat(data.idPointX_secp256k1), data.signerPrivKey, data.message, secp256k1);
         }).toThrow("Invalid point: At least one point is not valid: Error: Invalid point: not on curve");
     });
-    it("Should throw if the ring is not valid - ed25519", () => {
-        expect(() => {
-            src_1.RingSignature.sign(data.publicKeys_ed25519.slice(1).concat(data.idPointX_ed25519), data.signerPrivKey, data.message, ed25519);
-        }).toThrow((0, errors_1.invalidRing)("The ring is not sorted"));
-    });
     it("Should return a valid signature if the ring is empty - secp256k1", () => {
         const ringSignature = src_1.RingSignature.sign([], data.signerPrivKey, data.message, secp256k1);
-        expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
-        // test if the ring signature is valid
-        expect(ringSignature.verify()).toBeTruthy();
-    });
-    it("Should return a valid signature if the ring is empty - ed25519", () => {
-        const ringSignature = src_1.RingSignature.sign([], data.signerPrivKey, data.message, ed25519);
         expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
         // test if the ring signature is valid
         expect(ringSignature.verify()).toBeTruthy();
@@ -79,19 +62,9 @@ describe("Test sign()", () => {
             src_1.RingSignature.sign(data.publicKeys_secp256k1, 0n, data.message, secp256k1);
         }).toThrow((0, errors_1.invalidParams)("Signer private key cannot be 0 and must be < N"));
     });
-    it("Should throw if signerPrivKey is not valid - ed25519", () => {
-        expect(() => {
-            src_1.RingSignature.sign(data.publicKeys_ed25519, 0n, data.message, ed25519);
-        }).toThrow((0, errors_1.invalidParams)("Signer private key cannot be 0 and must be < N"));
-    });
     /* ------------CONFIG.HASH = SHA512------------ */
     it("Should return a valid ring signature if config.hash is SHA512 - secp256k1", () => {
         const ringSignature = src_1.RingSignature.sign(data.publicKeys_secp256k1, data.signerPrivKey, data.message, secp256k1, { hash: hashFunction_1.HashFunction.SHA512 });
-        expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
-        expect(ringSignature.verify()).toBe(true);
-    });
-    it("Should return a valid ring signature if config.hash is SHA512 - ed25519", () => {
-        const ringSignature = src_1.RingSignature.sign(data.publicKeys_ed25519, data.signerPrivKey, data.message, ed25519, { hash: hashFunction_1.HashFunction.SHA512 });
         expect(ringSignature).toBeInstanceOf(src_1.RingSignature);
         expect(ringSignature.verify()).toBe(true);
     });

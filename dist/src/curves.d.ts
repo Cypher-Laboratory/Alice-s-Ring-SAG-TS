@@ -3,8 +3,7 @@ import { Point } from "./point";
  * List of supported curves
  */
 export declare enum CurveName {
-    SECP256K1 = "SECP256K1",
-    ED25519 = "ED25519"
+    SECP256K1 = "SECP256K1"
 }
 export declare class Curve {
     name: CurveName;
@@ -15,7 +14,6 @@ export declare class Curve {
      * Creates a curve instance.
      *
      * @param curve - The curve name
-     * @param params - The curve parameters (optional if curve is SECP256K1 or ED25519)
      */
     constructor(curve: CurveName);
     /**

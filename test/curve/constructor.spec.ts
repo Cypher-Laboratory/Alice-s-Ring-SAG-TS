@@ -11,10 +11,6 @@ import { unknownCurve } from "../../src/errors";
 describe("Test Curve constructor", () => {
   it("Should pass using valid values", () => {
     expect(() => {
-      new Curve(CurveName.ED25519);
-    }).not.toThrow();
-
-    expect(() => {
       new Curve(CurveName.SECP256K1);
     }).not.toThrow();
   });

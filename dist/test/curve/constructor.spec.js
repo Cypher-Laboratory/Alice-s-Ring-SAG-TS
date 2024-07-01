@@ -12,9 +12,6 @@ const errors_1 = require("../../src/errors");
 describe("Test Curve constructor", () => {
     it("Should pass using valid values", () => {
         expect(() => {
-            new src_1.Curve(src_1.CurveName.ED25519);
-        }).not.toThrow();
-        expect(() => {
             new src_1.Curve(src_1.CurveName.SECP256K1);
         }).not.toThrow();
     });

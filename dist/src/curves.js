@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.derivePubKey = exports.Curve = exports.CurveName = void 0;
-const noble_ED25519_1 = require("./utils/noble-libraries/noble-ED25519");
 const noble_SECP256k1_1 = require("./utils/noble-libraries/noble-SECP256k1");
 const point_1 = require("./point");
 const utils_1 = require("./utils");
@@ -12,27 +11,19 @@ const SECP256K1 = {
     N: noble_SECP256k1_1.N,
     G: [noble_SECP256k1_1.Gx, noble_SECP256k1_1.Gy],
 };
-// ED25519 curve constants
-const GED25519 = new noble_ED25519_1.ExtendedPoint(noble_ED25519_1.Gx, noble_ED25519_1.Gy, 1n, (0, noble_ED25519_1.mod)(noble_ED25519_1.Gx * noble_ED25519_1.Gy));
-const ED25519 = {
-    P: noble_ED25519_1.P,
-    N: noble_ED25519_1.N, // curve's (group) order
-    G: [GED25519.toAffine().x, GED25519.toAffine().y],
-};
 /**
  * List of supported curves
  */
 var CurveName;
 (function (CurveName) {
     CurveName["SECP256K1"] = "SECP256K1";
-    CurveName["ED25519"] = "ED25519";
+    // ED25519 = "ED25519",
 })(CurveName || (exports.CurveName = CurveName = {}));
 class Curve {
     /**
      * Creates a curve instance.
      *
      * @param curve - The curve name
-     * @param params - The curve parameters (optional if curve is SECP256K1 or ED25519)
      */
     constructor(curve) {
         this.name = curve;
@@ -41,11 +32,6 @@ class Curve {
                 this.G = SECP256K1.G;
                 this.N = SECP256K1.N;
                 this.P = SECP256K1.P;
-                break;
-            case CurveName.ED25519:
-                this.G = ED25519.G;
-                this.N = ED25519.N;
-                this.P = ED25519.P;
                 break;
             default: {
                 throw (0, errors_1.unknownCurve)(curve);
@@ -101,12 +87,6 @@ class Curve {
                 if (x >= this.P || y >= this.P || x <= 0n || y <= 0n)
                     return false;
                 return (0, utils_1.modulo)(x ** 3n + 7n - y ** 2n, this.P) === 0n;
-            }
-            case CurveName.ED25519: {
-                if (x > this.P || y > this.P)
-                    return false;
-                const d = noble_ED25519_1.CURVE.d;
-                return ((0, utils_1.modulo)(y ** 2n - x ** 2n - 1n - d * x ** 2n * y ** 2n, this.P) === 0n);
             }
             default: {
                 console.warn("Unknown curve, cannot check if point is on curve. Returning false.");
